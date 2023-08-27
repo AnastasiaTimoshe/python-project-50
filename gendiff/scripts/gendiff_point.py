@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-"""gendiff scripts"""
+"""A script that runs a main function in terminal."""
 
 import argparse
 
 
 def main():
+    """A function that creates description in terminal."""
     parser = argparse.ArgumentParser(
         description='Compares two configuration '
                     'files and shows a difference.'
