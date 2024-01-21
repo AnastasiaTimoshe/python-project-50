@@ -2,14 +2,14 @@
 
 """Gendiff script."""
 
-from gendiff.diff_with_formatter import generate_diff
-from gendiff.cli import parse
+import gendiff
 
 
 def main():
-    args = parse()
-    print(
-        generate_diff(args.first_file, args.second_file, formater=args.format))
+    args = gendiff.parse_arguments.parse_arguments()
+    print(gendiff.gendiff.generate_diff(args.first_file,
+                                        args.second_file,
+                                        args.output_format))
 
 
 if __name__ == '__main__':
