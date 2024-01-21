@@ -1,5 +1,5 @@
-from gendiff import gendiff, parse_arguments
+"""Gendiff engine"""
 
+from gendiff.difference_checker import generate_diff
 
-generate_diff = gendiff.generate_diff
-parse_arguments = parse_arguments
+__all__ = ('generate_diff',)
