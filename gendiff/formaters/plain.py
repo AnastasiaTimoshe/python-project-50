@@ -1,64 +1,36 @@
 """Function for displaying differences in a plain format"""
 
-import json
 
-from gendiff.constants import (
-    DELETED,
-    ADDED,
-    NESTED,
-    CHANGED
-)
-
-TEMPLATE_ADDED = "Property '{0}' was added with value: {1}"
-TEMPLATE_REMOVED = "Property '{0}' was removed"
-TEMPLATE_UPDATED = "Property '{0}' was updated. From {1} to {2}"
-
-
-def format(tree, path=[]):
-    """
-    Difference output in plain format.
-    The argument tree is difference tree of two files.
-    The argument path is the path to the value.
-    Returns a list where all differences are described.
-    """
-
-    output = []
-    for item in tree:
-        type_node = item.get('type')
-        key = item.get('key')
-        first_value = item.get('first_value')
-        second_value = item.get('second_value')
-        complex = item.get('nested')
-
-        path.append(key)
-
-        if type_node is DELETED:
-            output.append(TEMPLATE_REMOVED.format('.'.join(path)))
-        elif type_node is ADDED:
-            output.append(TEMPLATE_ADDED.format('.'.join(path),
-                                                to_string(second_value)))
-
-        elif type_node is CHANGED:
-            output.append(TEMPLATE_UPDATED.format('.'.join(path),
-                                                  to_string(first_value),
-                                                  to_string(second_value)))
-        elif type_node is NESTED:
-            output.append(format(complex, path))
-        path.pop()
-
-    return '\n'.join(output)
+def stringify(value):
+    if value is None:
+        return 'null'
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, dict):
+        return '[complex value]'
+    if isinstance(value, int):
+        return str(value)
+    return f"'{value}'"
 
 
-def to_string(value):
-    """
-    Converting the value to the desired format.
-    """
+def build(diff, path=""):
+    lines = []
+    for k, v in diff.items():
+        property_path = f"{path}{k}"
+        if v['type'] == 'added':
+            lines.append(f"Property '{property_path}' was added with value: "
+                         f"{stringify(v['value'])}")
+        elif v['type'] == 'removed':
+            lines.append(f"Property '{property_path}' was removed")
+        elif v['type'] == 'updated':
+            lines.append(f"Property '{property_path}' was updated."
+                         f" From {stringify(v['old_value'])}"
+                         f" to {stringify(v['new_value'])}")
+        elif v['type'] == 'nested_dict':
+            value = build(v['value'], f"{property_path}.")
+            lines.append(f"{value}")
+    return '\n'.join(lines)
 
-    if isinstance(value, str):
-        result = f"'{value}'"
-    elif isinstance(value, dict):
-        result = '[complex value]'
-    else:
-        result = json.dumps(value)
 
-    return result
+def to_plain(diff):
+    return build(diff)

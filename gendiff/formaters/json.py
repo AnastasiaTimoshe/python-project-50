@@ -3,7 +3,7 @@
 import json
 
 
-def format(tree):
+def to_json(tree):
     """
     Difference output in json format.
     The argument tree is difference tree of two files.

@@ -1,20 +1,20 @@
 """A functions that converts the data into usable python."""
 
 import json
-
 import yaml
+import os
 
 
-def parse(data, format):
-    """
-    Accepts data and format.
-    Returns a dictionary.
-    """
+def get_content(path):
+    _, extension = os.path.splitext(path)
+    with open(path) as content:
+        data = content.read()
+        return parse(data, extension[1:])
 
-    FORMATS = {
-        'json': json.loads,
-        'yaml': yaml.safe_load,
-        'yml': yaml.safe_load
-    }
 
-    return FORMATS.get(format)(data)
+def parse(data, extension):
+    if extension == 'json':
+        return json.loads(data)
+    if extension == 'yaml' or extension == 'yml':
+        return yaml.safe_load(data)
+    raise ValueError('Unrecognized extension')

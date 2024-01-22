@@ -1,107 +1,48 @@
 """Function for displaying differences in a stylish format"""
 
-import json
 
-from gendiff.constants import (
-    DELETED,
-    ADDED,
-    NESTED,
-    UNCHANGED
-)
-
-NEW = '+'
-OLD = '-'
-NOCHANGE = ' '
-NUMBER_OF_SPACES = 4
-SPACE = ' '
-TEMPLATE_STYLISH = '{0}{1} {2}: {3}'
+INDENT = 4
+ACTION_PREFIX = {
+    'same': '    ',
+    'added': '  + ',
+    'removed': '  - '
+}
 
 
-def format(tree, depth=1):
-    """
-    Difference output in stylish format.
-    The argument tree is difference tree of two files.
-    The argument depth is the current depth of the tree traversal.
-    Returns a list where all differences are described.
-    """
+def stringify(data, depth):
+    if isinstance(data, bool):
+        return str(data).lower()
+    if data is None:
+        return 'null'
+    if isinstance(data, str) or isinstance(data, int):
+        return data
+    lines = ["{"]
+    for k, v in data.items():
+        lines.append(f"{' ' * depth}{ACTION_PREFIX['same']}{k}: "
+                     f"{stringify(v, depth+INDENT)}")
+    lines.append(f"{' ' * depth}}}")
+    return '\n'.join(lines)
 
-    output = ['{']
-    start_space = calculate_space(depth).get('start')
-    end_space = calculate_space(depth).get('end')
 
-    for item in tree:
-        type_node = item.get('type')
-        key = item.get('key')
-        first_value = item.get('first_value')
-        second_value = item.get('second_value')
-        complex = item.get('nested')
-
-        if type_node is DELETED:
-            output.append(TEMPLATE_STYLISH.format(
-                start_space, OLD, key,
-                to_string(first_value, depth + 1)
-            ))
-        elif type_node is ADDED:
-            output.append(TEMPLATE_STYLISH.format(
-                start_space, NEW, key,
-                to_string(second_value, depth + 1)
-            ))
-        elif type_node is UNCHANGED:
-            output.append(TEMPLATE_STYLISH.format(
-                start_space, NOCHANGE, key,
-                to_string(first_value, depth + 1)
-            ))
-        elif type_node is NESTED:
-            output.append(TEMPLATE_STYLISH.format(
-                start_space, NOCHANGE, key,
-                format(complex, depth + 1)
-            ))
+def stringify_diff(diff, depth=0):
+    lines = ['{']
+    for k, v in diff.items():
+        if v['type'] == 'nested_dict':
+            new_value = stringify_diff(v['value'], depth + INDENT)
+            lines.append(f"{' ' * depth}{ACTION_PREFIX['same']}{k}: "
+                         f"{new_value}")
+        elif v['type'] == 'updated':
+            lines.append(f"{' ' * depth}{ACTION_PREFIX['removed']}{k}: "
+                         f"{stringify(v['old_value'], depth+INDENT)}")
+            lines.append(f"{' ' * depth}{ACTION_PREFIX['added']}{k}: "
+                         f"{stringify(v['new_value'], depth+INDENT)}")
         else:
-            output.append(TEMPLATE_STYLISH.format(
-                start_space, OLD, key,
-                to_string(first_value, depth + 1)
-            ))
-            output.append(TEMPLATE_STYLISH.format(
-                start_space, NEW, key,
-                to_string(second_value, depth + 1)
-            ))
-
-    output.append(end_space + '}')
-    return '\n'.join(output)
+            lines.append(f"{' ' * depth}{ACTION_PREFIX[v['type']]}{k}: "
+                         f"{stringify(v['value'], depth+INDENT)}")
+    lines.append(f"{' ' * depth}}}")
+    res = '\n'.join(lines)
+    return res
 
 
-def calculate_space(depth):
-    """
-    Calculates the space you need to have before and after the node.
-    """
-
-    space = {'start': SPACE * (NUMBER_OF_SPACES * depth - 2),
-             'end': SPACE * (NUMBER_OF_SPACES * (depth - 1))}
-
-    return space
-
-
-def to_string(value, depth):
-    """
-    Checks if the value is complex.
-    Converts the value to the desired output format.
-    """
-
-    result = []
-    start_space = calculate_space(depth).get('start')
-    end_space = calculate_space(depth).get('end')
-
-    if isinstance(value, dict):
-        result.append('{')
-        for key, leaf_value in value.items():
-            result.append(TEMPLATE_STYLISH.format(
-                start_space, NOCHANGE,
-                key, to_string(leaf_value, depth + 1)
-            ))
-
-        result.append(end_space + '}')
-    elif isinstance(value, str):
-        result.append(value)
-    else:
-        result.append(json.dumps(value))
-    return '\n'.join(result)
+def to_stylish(diff):
+    return stringify_diff(diff)
