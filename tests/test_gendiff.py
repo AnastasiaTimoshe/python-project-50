@@ -3,6 +3,7 @@
 from gendiff import generate_diff
 import pytest
 
+
 from fixtures.output import RIGHT_JSON, RIGHT_SIMPLE, RIGHT_STYLISH, RIGHT_PLAIN
 
 
