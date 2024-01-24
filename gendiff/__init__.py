@@ -1,5 +1,5 @@
 """Gendiff engine"""
 
-from gendiff.gen_diff import generate_diff
+from gendiff.generate_diff import generate_diff
 
 __all__ = ('generate_diff',)

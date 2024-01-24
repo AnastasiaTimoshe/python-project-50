@@ -1,8 +1,8 @@
 """Function to check if there are differences between files."""
 
-from gendiff.parsing import get_content
+from gendiff.parser import get_content
 from gendiff.formaters.formater import get_formater
-from gendiff.diff import build_diff
+from gendiff.generate import build_diff
 
 
 def generate_diff(file_path1, file_path2, formater='stylish'):
@@ -17,15 +17,3 @@ def generate_diff(file_path1, file_path2, formater='stylish'):
     content2 = get_content(file_path2)
     dicts_diff = build_diff(content1, content2)
     return get_formater(dicts_diff, formater)
-
-
-# def read_file(file_name):
-#     """
-#     Accepts a filename.
-#     Returns the data of a file and its format.
-#     """
-#
-#     with open(file_name, 'r') as file:
-#         file_data = file.read()
-#         fyle_format = file_name.split('.')[-1]
-#         return file_data, fyle_format
