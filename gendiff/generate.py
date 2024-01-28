@@ -2,13 +2,6 @@
 
 
 def build_diff(old, new):
-    """
-    Takes two dictionaries as arguments and finds differences between them.
-    The argument first_dict is first dictionary.
-    The argument second_dict is second dictionary.
-    Returns a tree of differences.
-    """
-
     res = {}
     keys = set(new.keys()) | set(old.keys())
     keys = sorted(keys)

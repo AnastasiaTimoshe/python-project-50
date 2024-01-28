@@ -6,8 +6,6 @@ from gendiff.formaters.json import to_json
 
 
 def get_formater(diff, formater):
-    """Selects the output format."""
-
     if formater == 'stylish' or formater is None:
         return to_stylish(diff)
     if formater == 'plain':
